@@ -1,0 +1,18 @@
+{
+	"imports": {
+		"std/": "https://deno.land/std@0.205.0/"
+	},
+	"tasks": {
+		"dev": "deno task dev:autoformat & deno task dev:server",
+		"dev:server": "deno run --watch --allow-net --allow-read server.ts",
+		"dev:autoformat": "deno fmt --watch"
+	},
+	"fmt": {
+		"useTabs": true,
+		"lineWidth": 100,
+		"indentWidth": 3,
+		"semiColons": false,
+		"singleQuote": true,
+		"proseWrap": "preserve"
+	}
+}

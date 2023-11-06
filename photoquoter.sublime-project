@@ -1,0 +1,26 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+	"settings":
+	{
+		"LSP":
+		{
+			"LSP-typescript": {
+				"enabled": false
+			},
+			"Deno":
+			{
+				"enabled": true,
+				"initializationOptions": {
+					"enable": true,
+					"lint": true,
+					"unstable": false
+				}
+			}
+		}
+	}
+}
