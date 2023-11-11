@@ -3,9 +3,12 @@
 		"std/": "https://deno.land/std@0.205.0/"
 	},
 	"tasks": {
-		"dev": "deno task dev:autoformat & deno task dev:server",
-		"dev:server": "deno run --watch --allow-net --allow-read server.ts",
-		"dev:autoformat": "deno fmt --watch"
+		"build": "cd client && npm run build",
+		"dev": "deno task dev:autoformat & deno task dev:server & deno task dev:client",
+		"dev:server": "deno run --watch --allow-net --allow-read ./server/index.ts",
+		"dev:autoformat": "deno fmt --watch",
+		"dev:client": "cd client && npm run watch",
+		"build:client": "deno run --allow-read --allow-env --allow-net --allow-write --allow-run build_client.ts"
 	},
 	"fmt": {
 		"useTabs": true,
@@ -14,5 +17,7 @@
 		"semiColons": false,
 		"singleQuote": true,
 		"proseWrap": "preserve"
-	}
+	},
+	"nodeModulesDir": true,
+	"importMap": "./vendor/import_map.json"
 }

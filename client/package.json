@@ -1,0 +1,17 @@
+{
+	"name": "",
+	"type": "module",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "node build_client.mjs",
+		"watch": "node build_client.mjs --watch"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "UNLICENSED",
+	"dependencies": {
+		"esbuild": "^0.19.5",
+		"esbuild-svelte": "^0.8.0",
+		"svelte-preprocess-esbuild": "^3.0.1"
+	}
+}
