@@ -1,5 +1,7 @@
 {
 	"compilerOptions": {
-		"allowImportingTsExtensions": true
+		"allowImportingTsExtensions": true,
+		"lib": ["esnext", "DOM"],
+		"target": "esnext"
 	}
 }
