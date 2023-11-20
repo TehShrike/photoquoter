@@ -1,31 +1,27 @@
 <script lang=ts>
-	import type {LineItem} from './line_item_types'
+	import {create_new_line_item, type LineItem} from './line_item_types'
 	import LineItemComponent from './LineItem.svelte'
 	import { querystring_to_object } from './query_serialization'
-	import param_validator from './param_validator';
-	import jv from './json_validator'
+	import pv from './param_validator';
 	import assert from './assert'
-	import make_validator_asserter from './make_validator_asserter';
 
-	const cast_line_item_param = param_validator({
-		line_item_number: param_validator.integer
+	import {get_line_item_ids,get_line_item, set_line_item} from './local_storage'
+
+	const validate_line_item_param = pv({
+		line_item_number: pv.optional(pv.integer)
 	})
 
-	const assert_line_item_ids_valid = make_validator_asserter(jv.array(jv.string))
-	const assert_line_item_valid = make_validator_asserter(jv.object({
-		picture_data_url: jv.nullable(jv.string)
-	}))
+	const line_item_ids = get_line_item_ids()
 
-	const params = cast_line_item_param(querystring_to_object(location.search))
-
-	const line_item_ids = localStorage.getItem('line_item_ids') || []
+	console.log('line_item_ids:', line_item_ids)
 
 	if (line_item_ids.length === 0) {
-		throw new Error('IMPLEMENT THIS: create an empty line item')
-		// and then forcibly redirect to line item index 0
+		const new_line_item = create_new_line_item()
+		line_item_ids.push(new_line_item.id)
+		set_line_item(new_line_item)
 	}
 
-	assert_line_item_ids_valid(line_item_ids, 'line_item_ids')
+	const params = validate_line_item_param(querystring_to_object(location.search))
 
 	const current_line_item_index = params.line_item_number || 0
 
@@ -33,19 +29,9 @@
 
 	const line_item_id = line_item_ids[current_line_item_index]
 
-	const line_item = localStorage.getItem(`line_item-${line_item_id}`)
+	let line_item = get_line_item(line_item_id)
 
-	assert_line_item_valid(line_item, `line_item (${line_item_id})`)
-
-	/*
-		state in localstorage: list of line item ids, and each line item
-		probably only need the current line item index in the querystring
-		then can lookup the line item id
-		then can pull that line item's data from localstorage
-		then feed that into the line item component
-
-		if no state exists: create one with a single empty line item and redirect to the 0th line item
-	*/
+	$: set_line_item(line_item)
 </script>
 
-<LineItemComponent {line_item} />
+<LineItemComponent bind:line_item />

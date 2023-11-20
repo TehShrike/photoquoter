@@ -9,9 +9,15 @@
 
 	let data_url: string
 
-	$: line_item.picture_data_url = data_url
+	$: if(line_item) line_item.picture_data_url = data_url
 
-	$: image_promise = image_url_to_image(data_url)
+	$: console.log('line_item changed to', line_item)
+
+	$: image_promise = data_url && image_url_to_image(data_url)
+
+	$: image_promise && image_promise.catch(error => {
+		console.log('errororororor', error)
+	})
 </script>
 
 <div class=container style="font-weight: bold">
@@ -32,6 +38,10 @@
 	<div class="row">
 		{#await image_promise then image}
 			<DrawableImage {image} />
+		{:catch error}
+			<p>{JSON.stringify(error)}</p>
+			<p>{error.message}</p>
+			<pre>{error.stack}</pre>
 		{/await}
 	</div>
 </div>

@@ -1,4 +1,4 @@
-import LineItem from './LineItem.svelte'
+import LineItemApp from './LineItemApp.svelte'
 
 type State = {
 	line_items: {
@@ -22,11 +22,11 @@ const get_state_from_local_storage = (): State => {
 	}
 }
 
-new LineItem({
+new LineItemApp({
 	target: document.getElementById('target'),
 })
 
-console.log('writing and stuff')
+console.log('next')
 
 if (env.environment === 'development') {
 	const livereload_port = 35730
