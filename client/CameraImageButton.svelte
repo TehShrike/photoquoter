@@ -1,8 +1,7 @@
 <script lang=ts>
-	import image_url_to_image from "./image_url_to_image";
+    import assert from "./assert";
 
 	export let data_url: string | null = null
-	export let image: HTMLImageElement | null = null
 
 	let image_input: HTMLInputElement
 
@@ -11,9 +10,8 @@
 		const reader = new FileReader()
 
 		reader.onload = async (e) => {
-			data_url = e.target.result as string
-
-			image = await image_url_to_image(data_url)
+			assert(typeof e.target.result === 'string')
+			data_url = e.target.result
 		}
 
 		reader.readAsDataURL(file)

@@ -1,8 +1,17 @@
 <script lang=ts>
 	import CameraImageButton from "./CameraImageButton.svelte"
 	import DrawableImage from "./DrawableImage.svelte"
+	import image_url_to_image from "./image_url_to_image";
 
-	let image: HTMLImageElement
+	import type { LineItem } from "./line_item_types"
+
+	export let line_item: LineItem
+
+	let data_url: string
+
+	$: line_item.picture_data_url = data_url
+
+	$: image_promise = image_url_to_image(data_url)
 </script>
 
 <div class=container style="font-weight: bold">
@@ -12,7 +21,7 @@
 	<div class=row>
 		<button>Prev</button>
 
-		<CameraImageButton bind:image>
+		<CameraImageButton bind:data_url>
 			Take picture
 		</CameraImageButton>
 
@@ -21,7 +30,9 @@
 		<button>Next</button>
 	</div>
 	<div class="row">
-		<DrawableImage {image} />
+		{#await image_promise then image}
+			<DrawableImage {image} />
+		{/await}
 	</div>
 </div>
 
