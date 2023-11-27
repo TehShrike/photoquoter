@@ -5,7 +5,7 @@
 	"tasks": {
 		"build": "cd client && npm run build",
 		"dev": "deno task dev:autoformat & deno task dev:server & deno task dev:client",
-		"dev:server": "deno run --watch --allow-net --allow-read ./server/index.ts",
+		"dev:server": "deno run --watch --no-clear-screen --allow-net --allow-read ./server/index.ts",
 		"dev:autoformat": "deno fmt --watch --no-clear-screen",
 		"dev:client": "cd client && npm run dev",
 		"build:client": "deno run --allow-read --allow-env --allow-net --allow-write --allow-run build_client.ts"

@@ -1,4 +1,4 @@
-import jv from './json_validator'
+import jv from 'shared/json_validator'
 import make_validator_asserter from './make_validator_asserter'
 
 import type { LineItem } from './line_item_types'

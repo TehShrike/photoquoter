@@ -6,7 +6,8 @@
 		"build": "node build_client.mjs",
 		"dev": "run-p livereload watch",
 		"watch": "node build_client.mjs --watch",
-		"livereload": "livereload ../public --port 35730"
+		"livereload": "livereload ../public --port 35730",
+		"postinstall": "symlink ../shared ./node_modules/shared"
 	},
 	"keywords": [],
 	"author": "",
@@ -17,6 +18,7 @@
 		"just-omit": "^2.2.0",
 		"livereload": "^0.9.3",
 		"svelte-preprocess-esbuild": "^3.0.1",
+		"symlink-cli": "^1.0.0",
 		"typescript": "^5.2.2"
 	},
 	"devDependencies": {
