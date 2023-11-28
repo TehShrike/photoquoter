@@ -26,8 +26,8 @@ type Context<T> = {
 		[name: string]: string
 	}
 }
-type Handler = (req: Request, context: Context<null>) => Response
-type BodyHandler<T> = (req: Request, context: Context<T>) => Response
+type Handler = (req: Request, context: Context<null>) => Response | Promise<Response>
+type BodyHandler<T> = (req: Request, context: Context<T>) => Response | Promise<Response>
 type Method =
 	| 'GET'
 	| 'HEAD'
@@ -59,7 +59,7 @@ type Routes = {
 	}
 }
 
-const default404 = (_req: Request) =>
+const default_404 = (_req: Request) =>
 	new Response(`404 not found`, {
 		status: 404,
 	})
@@ -78,7 +78,7 @@ const is_body_handler = (
 export default function create_router(
 	routesToMethodMaps: Routes,
 	prefix = '',
-	not_found: Handler = default404,
+	not_found: Handler = default_404,
 ) {
 	const routes = Object.entries(routesToMethodMaps).map(([routeString, method_map]) => {
 		return {
@@ -98,7 +98,7 @@ export default function create_router(
 			const unknown_handler = method_map[method]
 
 			if (!unknown_handler) {
-				return not_found(req, { body: null, url, route_params: {} })
+				return await not_found(req, { body: null, url, route_params: {} })
 			}
 
 			const its_a_body_handler = is_body_handler(unknown_handler, method)
@@ -116,20 +116,20 @@ export default function create_router(
 					})
 				}
 
-				return handler(req, {
+				return await handler(req, {
 					body,
 					url,
 					route_params: params,
 				})
 			}
 
-			return unknown_handler(req, {
+			return await unknown_handler(req, {
 				body: null,
 				url,
 				route_params: params,
 			})
 		} else {
-			return not_found(req, { body: null, url, route_params: {} })
+			return await not_found(req, { body: null, url, route_params: {} })
 		}
 	}
 }
