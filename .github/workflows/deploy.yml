@@ -13,6 +13,9 @@ jobs:
       - name: Build client
         run: cd client && npm ci && npm run build
       - name: Deno vendor I guess
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
         run: deno vendor
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
