@@ -1,5 +1,7 @@
+// deno-lint-ignore-file no-explicit-any
 import parse from './regex_param.ts'
 import type { Validator } from '../shared/json_validator.ts'
+import { assert } from 'std/assert/assert.ts'
 
 const create_route_matcher = (routeString: string) => {
 	const { keys, pattern } = parse(routeString)
@@ -19,15 +21,8 @@ const create_route_matcher = (routeString: string) => {
 
 type RouteMatcher = ReturnType<typeof create_route_matcher>
 
-type Context<T> = {
-	body: T
-	url: URL
-	route_params: {
-		[name: string]: string
-	}
-}
-type Handler = (req: Request, context: Context<null>) => Response | Promise<Response>
-type BodyHandler<T> = (req: Request, context: Context<T>) => Response | Promise<Response>
+export type Handler<CONTEXT> = (req: Request, context: CONTEXT) => Response | Promise<Response>
+
 type Method =
 	| 'GET'
 	| 'HEAD'
@@ -39,23 +34,13 @@ type Method =
 	| 'TRACE'
 	| 'PATCH'
 
-type BodyMethod = 'POST' | 'PUT' | 'PATCH'
-
 type Validated<T> = T extends Validator<infer U> ? U : T
 
-type BodyResponder<V extends Validator<unknown>> = {
-	validator: V
-	handler: BodyHandler<Validated<V>>
-}
-
-type Routes = {
+export type Routes = {
 	[route_path: string]: {
-		[method in Exclude<Method, BodyMethod>]?: Handler
-	}
-} & {
-	[route_path: string]: {
-		// deno-lint-ignore no-explicit-any
-		[method in BodyMethod]?: <V extends Validator<any>>() => BodyResponder<V>
+		[method in Method]?: Handler<any> | {
+			fn: Handler<any>
+		}
 	}
 }
 
@@ -69,16 +54,25 @@ type RouteWithMatcher = {
 	method_map: Routes[keyof Routes]
 }
 
-const is_body_handler = (
-	_route_handler: Handler | (() => BodyResponder<Validator<unknown>>),
-	method: Method,
-): _route_handler is () => BodyResponder<Validator<unknown>> =>
-	method === 'POST' || method === 'PUT' || method === 'PATCH'
-
-export default function create_router(
+export default function create_router<CONTEXT>(
 	routesToMethodMaps: Routes,
-	prefix = '',
-	not_found: Handler = default_404,
+	{
+		prefix = '',
+		not_found = default_404,
+		route_executor,
+	}: {
+		prefix?: string
+		not_found?: Handler<{ route_params: { [param: string]: string } }>
+		route_executor: <
+			ROUTE_OBJECT extends {
+				fn: Handler<CONTEXT>
+				route_params: { [param: string]: string }
+			},
+		>(
+			req: Request,
+			route: ROUTE_OBJECT,
+		) => Response | Promise<Response>
+	},
 ) {
 	const routes = Object.entries(routesToMethodMaps).map(([routeString, method_map]) => {
 		return {
@@ -87,7 +81,7 @@ export default function create_router(
 		}
 	})
 
-	return async (req: Request) => {
+	return async (req: Request): Promise<Response> => {
 		const url = new URL(req.url)
 
 		const matched = find_matching_route_and_parse_params(routes, url.pathname)
@@ -97,39 +91,20 @@ export default function create_router(
 			const { params, method_map } = matched
 			const unknown_handler = method_map[method]
 
-			if (!unknown_handler) {
-				return await not_found(req, { body: null, url, route_params: {} })
-			}
+			assert(unknown_handler)
 
-			const its_a_body_handler = is_body_handler(unknown_handler, method)
+			const route_object = typeof unknown_handler === 'function'
+				? { fn: unknown_handler }
+				: unknown_handler
 
-			if (its_a_body_handler) {
-				const { validator, handler } = unknown_handler()
-				const content_type = req.headers.get('content-type')
-				const body = (content_type && content_type.toLowerCase() === 'application/json')
-					? await req.json()
-					: null
-
-				if (!validator.is_valid(body)) {
-					return new Response(`Invalid body\n${validator.get_messages(body, 'body')}`, {
-						status: 400,
-					})
-				}
-
-				return await handler(req, {
-					body,
-					url,
-					route_params: params,
-				})
-			}
-
-			return await unknown_handler(req, {
-				body: null,
-				url,
+			const middleware_context = {
+				...route_object,
 				route_params: params,
-			})
+			}
+
+			return await route_executor(req, middleware_context)
 		} else {
-			return await not_found(req, { body: null, url, route_params: {} })
+			return await not_found(req, { route_params: {} })
 		}
 	}
 }
