@@ -5,7 +5,6 @@ type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE'
 
 export type Endpoints = {
 	[path: string]: {
-		// deno-lint-ignore no-explicit-any
 		[method in HttpMethod]?: Endpoint<any, any, any>
 	}
 }

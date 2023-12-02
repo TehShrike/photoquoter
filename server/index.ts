@@ -1,28 +1,19 @@
 import { serveDir } from 'std/http/file_server.ts'
 import { assert } from 'std/assert/assert.ts'
 
-import create_router from './router.ts'
-import type { Handler } from './router.ts'
+import create_router from './util/router.ts'
+import type { Handler } from './util/router.ts'
 import crease_mysql from './mysql.ts'
-import { utc_to_iso_date, utc_to_iso_datetime } from './date.ts'
+import { utc_to_iso_date, utc_to_iso_datetime } from './util/date.ts'
 import { endpoint } from './endpoint_type.ts'
 import type { Endpoint } from './endpoint_type.ts'
-import pv from './param_validator.ts'
+import pv from './util/param_validator.ts'
 import jv from '../shared/json_validator.ts'
 
 const mysql_client = await crease_mysql()
 
 type ParamValidator<T> = (query_params: { [key: string]: string | string[] }) => T
 type PvContents<T> = T extends ParamValidator<infer U> ? U : T
-
-// const v = pv({
-// 	maybe: pv.optional(pv.one_of('not', 'so')),
-// })
-
-type Huh = Endpoint<typeof jv.null, typeof v, typeof v>
-type Meh = Huh['fn']
-
-type Wat = PvContents<typeof v>
 
 type RouterMiddlewareArgument = {
 	// deno-lint-ignore no-explicit-any

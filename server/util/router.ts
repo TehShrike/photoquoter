@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import parse from './regex_param.ts'
-import type { Validator } from '../shared/json_validator.ts'
+import type { Validator } from '../../shared/json_validator.ts'
 import { assert } from 'std/assert/assert.ts'
 
 const create_route_matcher = (routeString: string) => {

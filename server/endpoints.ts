@@ -1,4 +1,4 @@
-import type { Routes } from './router.ts'
+import type { Routes } from './util/router.ts'
 import jv from '../shared/json_validator.ts'
 import { endpoint } from './endpoint_type.ts'
 
