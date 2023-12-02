@@ -1,20 +1,23 @@
 import { assert } from 'std/assert/assert.ts'
 
 function omit<Obj extends object, Key extends keyof Obj>(
-  obj: Obj,
-  remove: Key[]
-): Omit<Obj, Key>;
+	obj: Obj,
+	remove: Key[],
+): Omit<Obj, Key>
 
 function omit<Obj extends object, Key extends keyof Obj>(
-  obj: Obj,
-  remove1: Key,
-  ...removeN: Key[]
-): Omit<Obj, Key>;
+	obj: Obj,
+	remove1: Key,
+	...removeN: Key[]
+): Omit<Obj, Key>
 
-function omit<Obj extends object, Key extends keyof Obj>(obj: Obj, remove: Key[] | Key): Omit<Obj, Key> {
-	const result = {};
+function omit<Obj extends object, Key extends keyof Obj>(
+	obj: Obj,
+	remove: Key[] | Key,
+): Omit<Obj, Key> {
+	const result = {}
 	if (typeof remove === 'string') {
-		remove = [].slice.call(arguments, 1);
+		remove = [].slice.call(arguments, 1)
 	}
 	assert(Array.isArray(remove))
 	for (const prop in obj) {
@@ -23,7 +26,7 @@ function omit<Obj extends object, Key extends keyof Obj>(obj: Obj, remove: Key[]
 			// @ts-ignore: copy/paste from original JS
 			if (remove.indexOf(prop) === -1) {
 				// @ts-ignore: copy/paste from original JS
-				result[prop] = obj[prop];
+				result[prop] = obj[prop]
 			}
 		}
 	}

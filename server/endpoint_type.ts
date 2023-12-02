@@ -26,11 +26,13 @@ type ParamValidator<T> = (query_params: { [key: string]: string | string[] }) =>
 // > = ReturnType<typeof pv<DESIRED_OBJECT, INPUT>>
 
 export type Context<BODY, QUERY_PARAMS, ROUTE_PARAMS> = {
+	request: Request
 	route_params: ROUTE_PARAMS
 	query_params: QUERY_PARAMS
 	body: BODY
 	url: URL
 	mysql: Client
+	return_json: (value: unknown) => Response
 }
 
 type PvContents<T> = T extends ParamValidator<infer U> ? U : T
@@ -45,7 +47,6 @@ export type Endpoint<
 	query_param_validator?: QUERY_PARAM
 	route_param_validator?: ParamValidator<ROUTE_PARAMS>
 	fn(
-		req: Request,
 		context: Context<
 			BvContents<BODY_VALIDATOR>,
 			PvContents<QUERY_PARAM>,

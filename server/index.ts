@@ -15,6 +15,16 @@ const mysql_client = await crease_mysql()
 type ParamValidator<T> = (query_params: { [key: string]: string | string[] }) => T
 type PvContents<T> = T extends ParamValidator<infer U> ? U : T
 
+const return_json = (value: unknown): Request => {
+	const json = JSON.stringify(value)
+
+	return new Request(json, {
+		headers: {
+			'content-type': 'application/json',
+		},
+	})
+}
+
 type RouterMiddlewareArgument = {
 	// deno-lint-ignore no-explicit-any
 	fn: Handler<any>
@@ -32,7 +42,7 @@ const api_router = create_router({
 				anything: jv.string,
 			}),
 			query_param_validator: v,
-			fn: async (_req, { query_params, mysql }) => {
+			fn: async ({ query_params, mysql }) => {
 				console.log('got query_params.yes', query_params.yes)
 
 				const { rows } = await mysql.execute('SELECT NOW() AS datetime')
@@ -44,7 +54,7 @@ const api_router = create_router({
 		}),
 	},
 	'mysqlcurdate': {
-		GET: async (_req, { mysql }) => {
+		GET: async ({ mysql }) => {
 			const { rows } = await mysql.execute('SELECT CURDATE() AS date')
 
 			assert(rows)
@@ -93,12 +103,14 @@ const api_router = create_router({
 			}
 		}
 
-		return route.fn(req, {
+		return route.fn({
+			request: req,
 			route_params: route.route_params,
 			query_params,
 			body,
 			url,
 			mysql: mysql_client,
+			return_json,
 		})
 	},
 })

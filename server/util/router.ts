@@ -21,7 +21,7 @@ const create_route_matcher = (routeString: string) => {
 
 type RouteMatcher = ReturnType<typeof create_route_matcher>
 
-export type Handler<CONTEXT> = (req: Request, context: CONTEXT) => Response | Promise<Response>
+export type Handler<CONTEXT> = (context: CONTEXT) => Response | Promise<Response>
 
 type Method =
 	| 'GET'
@@ -44,7 +44,7 @@ export type Routes = {
 	}
 }
 
-const default_404 = (_req: Request) =>
+const default_404 = () =>
 	new Response(`404 not found`, {
 		status: 404,
 	})
@@ -104,7 +104,7 @@ export default function create_router<CONTEXT>(
 
 			return await route_executor(req, middleware_context)
 		} else {
-			return await not_found(req, { route_params: {} })
+			return await not_found({ route_params: {} })
 		}
 	}
 }
