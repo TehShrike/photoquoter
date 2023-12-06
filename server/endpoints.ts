@@ -32,9 +32,10 @@ export default {
 			}),
 			async fn({ mysql, body, route_params }) {
 				await mysql.execute(sql`
-					UPDATE invoice_anonymous
-					SET description = ${body.description}
-					WHERE uuid = ${route_params.invoice_uuid}
+					INSERT INTO invoice_line_item_anonymous (invoice_anonymous, description)
+					SET
+						invoice_id = (SELECT invoice_id FROM invoice_anonymous WHERE uuid = ${route_params.invoice_uuid}),
+						description = ${body.description}
 				`)
 
 				return new Response()
