@@ -41,16 +41,16 @@ type BvContents<T> = T extends BodyValidator<infer U> ? U : T
 export type Endpoint<
 	BODY_VALIDATOR extends BodyValidator<any>,
 	QUERY_PARAM extends ParamValidator<any>,
-	ROUTE_PARAMS,
+	ROUTE_PARAMS extends ParamValidator<any>,
 > = {
 	body_validator?: BODY_VALIDATOR
 	query_param_validator?: QUERY_PARAM
-	route_param_validator?: ParamValidator<ROUTE_PARAMS>
+	route_param_validator?: ROUTE_PARAMS
 	fn(
 		context: Context<
 			BvContents<BODY_VALIDATOR>,
 			PvContents<QUERY_PARAM>,
-			ROUTE_PARAMS
+			PvContents<ROUTE_PARAMS>
 		>,
 	): Response | Promise<Response>
 }
@@ -58,5 +58,5 @@ export type Endpoint<
 export const endpoint = <
 	const BODY extends BodyValidator<any>,
 	const QUERY_PARAMS extends ParamValidator<any>,
-	const ROUTE_PARAMS,
+	const ROUTE_PARAMS extends ParamValidator<any>,
 >(endpoint: Endpoint<BODY, QUERY_PARAMS, ROUTE_PARAMS>) => endpoint

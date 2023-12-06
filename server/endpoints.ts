@@ -1,13 +1,8 @@
 import type { Routes } from './util/router.ts'
 import jv from '../shared/json_validator.ts'
+import pv from './util/param_validator.ts'
 import { endpoint } from './endpoint_type.ts'
 import sql from './util/sql_tagged_template.ts'
-
-import type {
-	InvoiceAnonymous,
-	InvoiceLineItemAnonymous,
-	InvoiceLineItemAnonymousImage,
-} from './db_type.ts'
 
 export default {
 	'invoice_anonymous': {
@@ -32,10 +27,18 @@ export default {
 			body_validator: jv.object({
 				description: jv.string,
 			}),
-			async fn({mysql, return_json}) {
+			route_param_validator: pv({
+				invoice_uuid: pv.string,
+			}),
+			async fn({ mysql, body, route_params }) {
+				await mysql.execute(sql`
+					UPDATE invoice_anonymous
+					SET description = ${body.description}
+					WHERE uuid = ${route_params.invoice_uuid}
+				`)
 
-				return return_json({})
-			}
-		})
-	}
+				return new Response()
+			},
+		}),
+	},
 } satisfies Routes
