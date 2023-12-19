@@ -30,16 +30,26 @@ export default {
 			route_param_validator: pv({
 				invoice_uuid: pv.string,
 			}),
-			async fn({ mysql, body, route_params }) {
-				await mysql.execute(sql`
+			async fn({ mysql, body, route_params, return_json }) {
+				const { lastInsertId: invoice_line_item_anonymous_id } = await mysql.execute(sql`
 					INSERT INTO invoice_line_item_anonymous (invoice_anonymous, description)
 					SET
 						invoice_id = (SELECT invoice_id FROM invoice_anonymous WHERE uuid = ${route_params.invoice_uuid}),
 						description = ${body.description}
 				`)
 
-				return new Response()
+				return return_json({
+					invoice_line_item_anonymous_id,
+				})
 			},
 		}),
 	},
+	'invoice_line_item_anonymous/:invoice_line_item_anonymous_id/invoice_line_item_anonymous_image':
+		{
+			POST: endpoint({
+				async fn({ mysql, body, return_json }) {
+					return return_json({})
+				},
+			}),
+		},
 } satisfies Routes

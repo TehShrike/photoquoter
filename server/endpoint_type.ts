@@ -35,8 +35,8 @@ export type Context<BODY, QUERY_PARAMS, ROUTE_PARAMS> = {
 	return_json: (value: unknown) => Response
 }
 
-type PvContents<T> = T extends ParamValidator<infer U> ? U : T
-type BvContents<T> = T extends BodyValidator<infer U> ? U : T
+type PvContents<T> = T extends ParamValidator<infer U> ? U : never
+type BvContents<T> = T extends BodyValidator<infer U> ? U : never
 
 export type Endpoint<
 	BODY_VALIDATOR extends BodyValidator<any>,

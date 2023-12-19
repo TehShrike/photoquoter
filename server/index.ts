@@ -1,136 +1,75 @@
 import { serveDir } from 'std/http/file_server.ts'
 import { assert } from 'std/assert/assert.ts'
 
-import create_router from './util/router.ts'
-import type { Handler } from './util/router.ts'
 import crease_mysql from './mysql.ts'
-import { utc_to_iso_date, utc_to_iso_datetime } from './util/date.ts'
-import { endpoint } from './endpoint_type.ts'
-import type { Endpoint } from './endpoint_type.ts'
-import pv from './util/param_validator.ts'
-import jv from '../shared/json_validator.ts'
+import api from './api.ts'
+import type { Context } from './api.ts'
 
 const mysql_client = await crease_mysql()
 
 type ParamValidator<T> = (query_params: { [key: string]: string | string[] }) => T
 type PvContents<T> = T extends ParamValidator<infer U> ? U : T
 
-const return_json = (value: unknown): Request => {
-	const json = JSON.stringify(value)
-
-	return new Request(json, {
-		headers: {
-			'content-type': 'application/json',
-		},
-	})
+// deno-lint-ignore no-explicit-any
+type ApiFunctionImplementation = (arg: any, context: Context) => Promise<any>
+type ApiObject = {
+	[prop: string]: ApiFunctionImplementation | ApiObject
 }
+const get_api_function = (
+	props: string[],
+	api: ApiObject | ApiFunctionImplementation,
+): ApiFunctionImplementation => {
+	console.log('get_api_function got passed props', props)
+	if (props.length === 0) {
+		assert(typeof api === 'function')
+		console.log('Returning api function', api)
+		return api
+	}
 
-type RouterMiddlewareArgument = {
-	// deno-lint-ignore no-explicit-any
-	fn: Handler<any>
-	route_params: { [param: string]: string }
-	// deno-lint-ignore no-explicit-any
-} & Endpoint<any, any, any>
+	assert(typeof api !== 'function')
 
-const v = pv({
-	yes: pv.optional(pv.one_of('sir', 'maam')),
-})
-const api_router = create_router({
-	'mysqlnow': {
-		GET: endpoint({
-			body_validator: jv.object({
-				anything: jv.string,
-			}),
-			query_param_validator: v,
-			fn: async ({ query_params, mysql }) => {
-				console.log('got query_params.yes', query_params.yes)
+	const [next_prop, ...rest_of_props] = props
 
-				const { rows } = await mysql.execute('SELECT NOW() AS datetime')
+	assert(next_prop in api)
 
-				assert(rows)
+	const next_api = api[next_prop]
 
-				return new Response(utc_to_iso_datetime(rows[0].datetime))
-			},
-		}),
-	},
-	'mysqlcurdate': {
-		GET: async ({ mysql }) => {
-			const { rows } = await mysql.execute('SELECT CURDATE() AS date')
-
-			assert(rows)
-
-			console.log(rows[0])
-
-			return new Response(utc_to_iso_date(rows[0].date))
-		},
-	},
-}, {
-	prefix: '/api/',
-	async route_executor(req, route: RouterMiddlewareArgument) {
-		const content_type = req.headers.get('content-type')
-
-		let body = null
-
-		if (content_type && content_type.toLowerCase() === 'application/json') {
-			body = await req.json()
-
-			if (route.body_validator && !route.body_validator.is_valid(body)) {
-				return new Response(
-					`Invalid body\n${route.body_validator.get_messages(body, 'body')}`,
-					{
-						status: 400,
-					},
-				)
-			}
-		}
-
-		const url = new URL(req.url)
-		const query_params = Object.fromEntries(url.searchParams.entries())
-
-		if (route.query_param_validator) {
-			try {
-				route.query_param_validator(query_params)
-			} catch (err) {
-				return new Response(err.message, { status: 400 })
-			}
-		}
-
-		if (route.route_param_validator) {
-			try {
-				route.route_param_validator(route.route_params)
-			} catch (err) {
-				return new Response(err.message, { status: 400 })
-			}
-		}
-
-		return route.fn({
-			request: req,
-			route_params: route.route_params,
-			query_params,
-			body,
-			url,
-			mysql: mysql_client,
-			return_json,
-		})
-	},
-})
+	return get_api_function(rest_of_props, next_api)
+}
 
 Deno.serve({
 	port: 8080,
-}, async (req) => {
-	const pathname = new URL(req.url).pathname
+}, async (request) => {
+	const pathname = new URL(request.url).pathname
 
 	console.log('pathname:', pathname)
 
-	if (pathname.startsWith('/api')) {
+	if (pathname.startsWith('/api/')) {
+		const api_path = pathname.slice('/api/'.length)
+		const api_function = get_api_function(api_path.split('.'), api)
+
+		const content_type = request.headers.get('content-type')
+		assert(content_type && content_type.toLowerCase() === 'application/json')
+
+		const body = await request.json()
+
+		console.log('Calling api_function, body is', body)
 		try {
-			return await api_router(req)
+			const response_body = await api_function(body, { mysql: mysql_client, request })
+			return new Response(JSON.stringify(response_body), {
+				headers: {
+					'content-type': 'application/json',
+				},
+			})
 		} catch (err) {
-			console.error(err)
+			console.error('error happened mmm', err.message)
+			return new Response(err.message, {
+				status: 500,
+			})
 		}
 	}
 
-	return serveDir(req, {
+	return serveDir(request, {
 		fsRoot: 'public',
 	})
 })

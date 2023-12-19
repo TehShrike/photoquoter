@@ -3,6 +3,8 @@
 	import DrawableImage from "./DrawableImage.svelte"
 	import image_url_to_image from "./image_url_to_image";
 
+	import api from './api_request'
+
 	import type { LineItem } from "./line_item_types"
 
 	export let line_item: LineItem
@@ -18,6 +20,8 @@
 	$: image_promise && image_promise.catch(error => {
 		console.log('errororororor', error)
 	})
+
+	api.some_other_endpoint({ wat: false })
 </script>
 
 <div class=container style="font-weight: bold">
