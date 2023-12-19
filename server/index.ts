@@ -19,10 +19,8 @@ const get_api_function = (
 	props: string[],
 	api: ApiObject | ApiFunctionImplementation,
 ): ApiFunctionImplementation => {
-	console.log('get_api_function got passed props', props)
 	if (props.length === 0) {
 		assert(typeof api === 'function')
-		console.log('Returning api function', api)
 		return api
 	}
 
@@ -42,8 +40,6 @@ Deno.serve({
 }, async (request) => {
 	const pathname = new URL(request.url).pathname
 
-	console.log('pathname:', pathname)
-
 	if (pathname.startsWith('/api/')) {
 		const api_path = pathname.slice('/api/'.length)
 		const api_function = get_api_function(api_path.split('.'), api)
@@ -53,7 +49,6 @@ Deno.serve({
 
 		const body = await request.json()
 
-		console.log('Calling api_function, body is', body)
 		try {
 			const response_body = await api_function(body, { mysql: mysql_client, request })
 			return new Response(JSON.stringify(response_body), {

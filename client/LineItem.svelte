@@ -21,7 +21,9 @@
 		console.log('errororororor', error)
 	})
 
-	api.some_other_endpoint({ wat: false })
+	// TODO: make the body the second argument so that it is permissable to
+	// pass in 0 arguments from the client-side
+	api.what_day_is_it()
 </script>
 
 <div class=container style="font-weight: bold">

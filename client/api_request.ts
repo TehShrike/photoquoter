@@ -47,6 +47,5 @@ const turn_object_into_endpoint_functions = (object: Shape, prefix: string = '')
 	)
 
 const api = turn_object_into_endpoint_functions(api_shape)
-console.log(api)
-debugger
+
 export default api as ConsumableApi

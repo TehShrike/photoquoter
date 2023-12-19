@@ -1,5 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import type { Client } from 'https://deno.land/x/mysql@v2.12.1/mod.ts'
+import sql from './util/sql_tagged_template.ts'
 
 export type Context = {
 	request: Request
@@ -7,19 +8,40 @@ export type Context = {
 }
 
 const api = {
-	some_endpoint: {
-		async something_deeper({ value }: { value: string }, { mysql }: Context) {
-			await console.log(value)
+	invoice_anonymous: {
+		async create(_arg: undefined, { mysql }: Context) {
+			const uuid = crypto.randomUUID()
+
+			const { lastInsertId: invoice_anonymous_id } = await mysql.execute(sql`
+					INSERT INTO invoice_anonymous
+						SET uuid = ${uuid}
+				`)
+
 			return {
-				some_value: 'oh yeah',
+				invoice_anonymous_id,
+				uuid,
 			}
 		},
 	},
-	async some_other_endpoint({ wat }: { wat: boolean }, { mysql }: Context) {
-		await console.log(wat)
-		return {
-			elsewhere: 'no',
-		}
+	invoice_line_item_anonymous: {
+		async create(
+			{ invoice_uuid, description }: { invoice_uuid: string; description: string },
+			{ mysql }: Context,
+		) {
+			const { lastInsertId: invoice_line_item_anonymous_id } = await mysql.execute(sql`
+				INSERT INTO invoice_line_item_anonymous (invoice_anonymous, description)
+				SET
+					invoice_id = (SELECT invoice_id FROM invoice_anonymous WHERE uuid = ${invoice_uuid}),
+					description = ${description}
+			`)
+
+			return {
+				invoice_line_item_anonymous_id,
+			}
+		},
+	},
+	async what_day_is_it(_arg: undefined, { mysql }: Context) {
+		return await mysql.query(`SELECT CURDATE()`)
 	},
 } as const satisfies {
 	[prop: string]: ApiFunctionImplementation<any, any> | {
