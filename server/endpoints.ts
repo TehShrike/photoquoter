@@ -29,7 +29,7 @@ export default {
 			}),
 			route_param_validator: pv({
 				invoice_uuid: pv.string,
-			}),
+			})(),
 			async fn({ mysql, body, route_params }) {
 				await mysql.execute(sql`
 					UPDATE invoice_anonymous

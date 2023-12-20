@@ -157,14 +157,14 @@ type MakeValidator = {
 	>(
 		shape: CastShape<DESIRED_OBJECT>,
 		options?: { throw_on_invalid_optional_values?: boolean; allow_non_specified_values?: false },
-	): (object: INPUT) => UndefinedActuallyMeansOptional<DESIRED_OBJECT>
+	): () => (object: INPUT) => UndefinedActuallyMeansOptional<DESIRED_OBJECT>
 	<
 		DESIRED_OBJECT extends { [key: string]: any },
 		INPUT extends Partial<{ [key in keyof DESIRED_OBJECT]: string | string[] }>,
 	>(
 		shape: CastShape<DESIRED_OBJECT>,
 		options: { throw_on_invalid_optional_values?: boolean; allow_non_specified_values: true },
-	): <ACTUAL_INPUT extends INPUT & { [key: string]: string }>(
+	): () => <ACTUAL_INPUT extends INPUT & { [key: string]: string }>(
 		object: ACTUAL_INPUT,
 	) => UndefinedActuallyMeansOptional<
 		DESIRED_OBJECT & { [key in Exclude<keyof ACTUAL_INPUT, keyof INPUT>]: string }
@@ -179,7 +179,7 @@ const make_validator: MakeValidator = <
 }: { throw_on_invalid_optional_values?: boolean; allow_non_specified_values?: boolean } = {}) => {
 	const officially_accepted_keys = Object.keys(shape)
 
-	return (
+	return () => (
 		object: Partial<{ [key in keyof DESIRED_OBJECT]: string | string[] }>,
 	): UndefinedActuallyMeansOptional<DESIRED_OBJECT> => {
 		const validated_output_object = from_entries(
