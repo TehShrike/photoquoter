@@ -157,14 +157,14 @@ type MakeValidator = {
 	>(
 		shape: CastShape<DESIRED_OBJECT>,
 		options?: { throw_on_invalid_optional_values?: boolean; allow_non_specified_values?: false },
-	): () => (object: INPUT) => UndefinedActuallyMeansOptional<DESIRED_OBJECT>
+	): (...args: never[]) => (object: INPUT) => UndefinedActuallyMeansOptional<DESIRED_OBJECT>
 	<
 		DESIRED_OBJECT extends { [key: string]: any },
 		INPUT extends Partial<{ [key in keyof DESIRED_OBJECT]: string | string[] }>,
 	>(
 		shape: CastShape<DESIRED_OBJECT>,
 		options: { throw_on_invalid_optional_values?: boolean; allow_non_specified_values: true },
-	): () => <ACTUAL_INPUT extends INPUT & { [key: string]: string }>(
+	): (...args: never[]) => <ACTUAL_INPUT extends INPUT & { [key: string]: string }>(
 		object: ACTUAL_INPUT,
 	) => UndefinedActuallyMeansOptional<
 		DESIRED_OBJECT & { [key in Exclude<keyof ACTUAL_INPUT, keyof INPUT>]: string }
