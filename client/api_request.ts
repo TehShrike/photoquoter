@@ -29,7 +29,7 @@ type Shape = {
 	[prop: string]: 'function' | Shape
 }
 
-const make_fetch_function_for_endpoint = (name: string) => (arg: any) =>
+const make_fetch_function_for_endpoint = (name: string) => (arg: any = null) =>
 	futch(`/api/${name}`, {
 		body: arg,
 	})

@@ -21,8 +21,6 @@
 		console.log('errororororor', error)
 	})
 
-	// TODO: make the body the second argument so that it is permissable to
-	// pass in 0 arguments from the client-side
 	api.what_day_is_it()
 </script>
 

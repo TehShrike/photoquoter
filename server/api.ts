@@ -9,7 +9,7 @@ export type Context = {
 
 const api = {
 	invoice_anonymous: {
-		async create(_arg: undefined, { mysql }: Context) {
+		async create({ mysql }: Context) {
 			const uuid = crypto.randomUUID()
 
 			const { lastInsertId: invoice_anonymous_id } = await mysql.execute(sql`
@@ -25,8 +25,8 @@ const api = {
 	},
 	invoice_line_item_anonymous: {
 		async create(
-			{ invoice_uuid, description }: { invoice_uuid: string; description: string },
 			{ mysql }: Context,
+			{ invoice_uuid, description }: { invoice_uuid: string; description: string },
 		) {
 			const { lastInsertId: invoice_line_item_anonymous_id } = await mysql.execute(sql`
 				INSERT INTO invoice_line_item_anonymous (invoice_anonymous, description)
@@ -40,7 +40,7 @@ const api = {
 			}
 		},
 	},
-	async what_day_is_it(_arg: undefined, { mysql }: Context) {
+	async what_day_is_it({ mysql }: Context) {
 		return await mysql.query(`SELECT CURDATE()`)
 	},
 } as const satisfies {
@@ -53,12 +53,15 @@ type ApiShape = {
 	[prop: string]: ApiFunctionImplementation<any, any> | ApiShape
 }
 
-type ConsumableApiFunction<Arg, Response> = (arg: Arg) => Promise<Response>
+type ConsumableApiFunction<Arg, Response> = unknown extends Arg ? () => Promise<Response>
+	: (arg: Arg) => Promise<Response>
 
 type FirstArgumentType<T extends (arg: any, context: Context) => any> = T extends
 	(arg: infer U, context: Context) => any ? U : never
 
-type ApiFunctionImplementation<Arg, Response> = (arg: Arg, context: Context) => Promise<Response>
+type ApiFunctionImplementation<Arg, Response> =
+	| ((context: Context) => Promise<Response>)
+	| ((context: Context, arg: Arg) => Promise<Response>)
 
 type ApiObject = typeof api
 

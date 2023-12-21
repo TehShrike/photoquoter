@@ -11,7 +11,7 @@ type ParamValidator<T> = (query_params: { [key: string]: string | string[] }) =>
 type PvContents<T> = T extends ParamValidator<infer U> ? U : T
 
 // deno-lint-ignore no-explicit-any
-type ApiFunctionImplementation = (arg: any, context: Context) => Promise<any>
+type ApiFunctionImplementation = (context: Context, arg: any) => Promise<any>
 type ApiObject = {
 	[prop: string]: ApiFunctionImplementation | ApiObject
 }
@@ -50,7 +50,7 @@ Deno.serve({
 		const body = await request.json()
 
 		try {
-			const response_body = await api_function(body, { mysql: mysql_client, request })
+			const response_body = await api_function({ mysql: mysql_client, request }, body)
 			return new Response(JSON.stringify(response_body), {
 				headers: {
 					'content-type': 'application/json',
