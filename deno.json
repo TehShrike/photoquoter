@@ -3,7 +3,7 @@
 		"std/": "https://deno.land/std@0.205.0/"
 	},
 	"tasks": {
-		"build": "cd client && npm run build",
+		"build": "deno task dev:export_api_deetz && cd client && npm run build",
 		"dev": "deno task dev:autoformat & deno task dev:server & deno task dev:client & deno task dev:export_api_deetz",
 		"dev:server": "deno run --watch --no-clear-screen --allow-net --allow-read ./server/index.ts",
 		"dev:autoformat": "deno fmt --watch --no-clear-screen",
