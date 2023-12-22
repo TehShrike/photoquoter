@@ -4,7 +4,7 @@
 	},
 	"tasks": {
 		"build": "deno task build:export_api_deetz && cd client && npm ci && npm run build",
-		"build:export_api_deetz": "deno run --no-clear-screen --allow-write ./server/export_api_deetz.ts",
+		"build:export_api_deetz": "deno run --allow-write ./server/export_api_deetz.ts",
 		"dev": "deno task dev:autoformat & deno task dev:server & deno task dev:client & deno task dev:export_api_deetz",
 		"dev:server": "deno run --watch --no-clear-screen --allow-net --allow-read ./server/index.ts",
 		"dev:autoformat": "deno fmt --watch --no-clear-screen",
