@@ -55,6 +55,8 @@ export default async () => {
 	const host = get_env('MYSQL_HOST')
 	const local = host === '127.0.0.1' || host === 'localhost'
 
+	console.log(`Connecting to host "${host}"`)
+
 	try {
 		return await mysql.createPool({
 			...static_connection_options,
