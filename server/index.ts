@@ -1,11 +1,12 @@
 import { serveDir } from 'std/http/file_server.ts'
 import { assert } from 'std/assert/assert.ts'
 
-import crease_mysql from './mysql.ts'
+import create_mysql from './mysql.ts'
+import make_mysql_helpers_object from './util/mysql_helpers_object.ts'
 import api from './api.ts'
 import type { Context } from './api.ts'
 
-const mysql_client = await crease_mysql()
+const mysql_pool = await create_mysql()
 
 type ParamValidator<T> = (query_params: { [key: string]: string | string[] }) => T
 type PvContents<T> = T extends ParamValidator<infer U> ? U : T
@@ -49,18 +50,26 @@ Deno.serve({
 
 		const body = await request.json()
 
+		let mysql_connection = null
 		try {
-			const response_body = await api_function({ mysql: mysql_client, request }, body)
+			mysql_connection = await mysql_pool.getConnection()
+			const mysql = make_mysql_helpers_object(mysql_connection)
+			const response_body = await api_function({ mysql, request }, body)
 			return new Response(JSON.stringify(response_body), {
 				headers: {
 					'content-type': 'application/json',
 				},
 			})
 		} catch (err) {
-			console.error('error happened mmm', err.message)
+			console.error('error thrown by', pathname)
+			console.error(err)
 			return new Response(err.message, {
 				status: 500,
 			})
+		} finally {
+			if (mysql_connection) {
+				mysql_connection.release()
+			}
 		}
 	}
 

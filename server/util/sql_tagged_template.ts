@@ -41,7 +41,7 @@ const CHARS_ESCAPE_MAP = {
 	'\r': '\\r',
 	'\x1a': '\\Z',
 	'"': '\\"',
-	'\'': '\\\'',
+	"'": "\\'",
 	'\\': '\\\\',
 }
 
@@ -58,12 +58,12 @@ const escape_string = (val: string) => {
 
 	if (chunkIndex === 0) {
 		// Nothing was escaped
-		return '\'' + val + '\''
+		return "'" + val + "'"
 	}
 
 	if (chunkIndex < val.length) {
-		return '\'' + escapedVal + val.slice(chunkIndex) + '\''
+		return "'" + escapedVal + val.slice(chunkIndex) + "'"
 	}
 
-	return '\'' + escapedVal + '\''
+	return "'" + escapedVal + "'"
 }

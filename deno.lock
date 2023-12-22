@@ -2,6 +2,7 @@
   "version": "3",
   "packages": {
     "specifiers": {
+      "npm:@types/node": "npm:@types/node@18.16.19",
       "npm:@typescript-eslint/eslint-plugin@^5.15.0": "npm:@typescript-eslint/eslint-plugin@5.62.0_@typescript-eslint+parser@5.62.0__eslint@8.53.0__typescript@4.9.5_eslint@8.53.0_typescript@4.9.5",
       "npm:@typescript-eslint/parser@^5.15.0": "npm:@typescript-eslint/parser@5.62.0_eslint@8.53.0_typescript@4.9.5",
       "npm:esbuild-svelte@^0.8.0": "npm:esbuild-svelte@0.8.0_esbuild@0.19.5_svelte@4.2.2",
@@ -221,6 +222,10 @@
       },
       "@types/json5@0.0.29": {
         "integrity": "sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==",
+        "dependencies": {}
+      },
+      "@types/node@18.16.19": {
+        "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA==",
         "dependencies": {}
       },
       "@types/semver@7.5.5": {

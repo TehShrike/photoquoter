@@ -1,10 +1,10 @@
 // deno-lint-ignore-file no-explicit-any
-import type { Client } from 'https://deno.land/x/mysql@v2.12.1/mod.ts'
+import type { MysqlHelpersObject } from './util/mysql_helpers_object.ts'
 import sql from './util/sql_tagged_template.ts'
 
 export type Context = {
 	request: Request
-	mysql: Client
+	mysql: MysqlHelpersObject
 }
 
 const api = {
@@ -12,10 +12,10 @@ const api = {
 		async create({ mysql }: Context) {
 			const uuid = crypto.randomUUID()
 
-			const { lastInsertId: invoice_anonymous_id } = await mysql.execute(sql`
-					INSERT INTO invoice_anonymous
-						SET uuid = ${uuid}
-				`)
+			const invoice_anonymous_id = await mysql.query(sql`
+				INSERT INTO invoice_anonymous
+					SET uuid = ${uuid}
+			`).get_insert_id()
 
 			return {
 				invoice_anonymous_id,
@@ -28,12 +28,12 @@ const api = {
 			{ mysql }: Context,
 			{ invoice_uuid, description }: { invoice_uuid: string; description: string },
 		) {
-			const { lastInsertId: invoice_line_item_anonymous_id } = await mysql.execute(sql`
+			const invoice_line_item_anonymous_id = await mysql.query(sql`
 				INSERT INTO invoice_line_item_anonymous (invoice_anonymous, description)
 				SET
 					invoice_id = (SELECT invoice_id FROM invoice_anonymous WHERE uuid = ${invoice_uuid}),
 					description = ${description}
-			`)
+			`).get_insert_id()
 
 			return {
 				invoice_line_item_anonymous_id,
@@ -41,7 +41,9 @@ const api = {
 		},
 	},
 	async what_day_is_it({ mysql }: Context) {
-		return await mysql.query(`SELECT CURDATE()`)
+		return await mysql.query(`SELECT CURDATE() AS today`).get_first_row_column(
+			'today',
+		)
 	},
 } as const satisfies {
 	[prop: string]: ApiFunctionImplementation<any, any> | {
