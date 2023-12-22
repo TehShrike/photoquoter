@@ -3,7 +3,7 @@
 	[
 		{
 			"path": ".",
-			"folder_exclude_patterns": ["client"]
+			"folder_exclude_patterns": ["client"],
 		}
 	],
 	"settings":
@@ -11,7 +11,7 @@
 		"LSP":
 		{
 			"LSP-typescript": {
-				"enabled": false
+				"enabled": false,
 			},
 			"Deno":
 			{
@@ -19,9 +19,9 @@
 				"initializationOptions": {
 					"enable": true,
 					"lint": true,
-					"unstable": false
-				}
-			}
-		}
-	}
+					"unstable": false,
+				},
+			},
+		},
+	},
 }
