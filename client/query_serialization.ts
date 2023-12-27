@@ -48,6 +48,5 @@ export const serialize_to_url = (data_to_serialize: { [key: string]: JsonableVal
 		([key, value]) => `${key}=${encodeURIComponent(JSON.stringify(value))}`,
 	).join(`&`)
 
-	return query_string
-	// history.replaceState(data_to_serialize, ``, query_string ? `?` + query_string : `.`)
+	history.replaceState(data_to_serialize, ``, query_string ? `?` + query_string : `.`)
 }

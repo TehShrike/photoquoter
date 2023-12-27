@@ -12,31 +12,88 @@ const api = {
 		async create({ mysql }: Context) {
 			const uuid = crypto.randomUUID()
 
-			const invoice_anonymous_id = await mysql.query(sql`
+			await mysql.query(sql`
 				INSERT INTO invoice_anonymous
 					SET uuid = ${uuid}
-			`).get_insert_id()
+			`)
 
 			return {
-				invoice_anonymous_id,
 				uuid,
 			}
+		},
+		async get_line_items(
+			{ mysql }: Context,
+			{ invoice_anonymous_uuid }: { invoice_anonymous_uuid: string },
+		) {
+			return await mysql.query(sql`
+				SELECT invoice_line_item_anonymous.description, invoice_line_item_anonymous.invoice_line_item_anonymous_id
+				FROM invoice_anonymous
+				JOIN invoice_line_item_anonymous USING(invoice_anonymous_id)
+				WHERE invoice_anonymous.uuid = ${invoice_anonymous_uuid}
+			`).get_rows() as {
+				description: string
+				invoice_line_item_anonymous_id: number
+			}[]
 		},
 	},
 	invoice_line_item_anonymous: {
 		async create(
 			{ mysql }: Context,
-			{ invoice_uuid, description }: { invoice_uuid: string; description: string },
+			{ invoice_anonymous_uuid, description }: {
+				invoice_anonymous_uuid: string
+				description: string
+			},
 		) {
 			const invoice_line_item_anonymous_id = await mysql.query(sql`
-				INSERT INTO invoice_line_item_anonymous (invoice_anonymous, description)
+				INSERT INTO invoice_line_item_anonymous
 				SET
-					invoice_id = (SELECT invoice_id FROM invoice_anonymous WHERE uuid = ${invoice_uuid}),
+					invoice_anonymous_id = (SELECT invoice_anonymous_id FROM invoice_anonymous WHERE uuid = ${invoice_anonymous_uuid}),
 					description = ${description}
 			`).get_insert_id()
 
 			return {
 				invoice_line_item_anonymous_id,
+				description,
+			}
+		},
+		async get_with_images(
+			{ mysql }: Context,
+			{ invoice_anonymous_uuid, invoice_line_item_anonymous_id }: {
+				invoice_anonymous_uuid: string
+				invoice_line_item_anonymous_id: number
+			},
+		) {
+			const invoice_line_item_anonymous = await mysql.query(sql`
+				SELECT invoice_line_item_anonymous.description, invoice_line_item_anonymous.invoice_line_item_anonymous_id
+				FROM invoice_anonymous
+				JOIN invoice_line_item_anonymous USING(invoice_anonymous_id)
+				WHERE invoice_anonymous.uuid = ${invoice_anonymous_uuid}
+			`).get_first_row() as null | {
+				description: string
+				invoice_line_item_anonymous_id: number
+			}
+
+			if (invoice_line_item_anonymous === null) {
+				return new Response('Not found', {
+					status: 404,
+				})
+			}
+
+			const invoice_line_item_anonymous_images = await mysql.query(sql`
+				SELECT invoice_line_item_anonymous_image.*
+				FROM invoice_line_item_anonymous_image
+				WHERE invoice_line_item_anonymous_image.invoice_line_item_anonymous_id = ${invoice_line_item_anonymous_id}
+			`).get_rows() as {
+				invoice_line_item_anonymous_image_id: number
+				image: unknown
+				invoice_line_item_anonymous_id: number
+			}[]
+
+			console.log('Images from mysql2:', invoice_line_item_anonymous_images)
+
+			return {
+				...invoice_line_item_anonymous,
+				invoice_line_item_anonymous_images,
 			}
 		},
 	},

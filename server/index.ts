@@ -3,10 +3,15 @@ import { assert } from 'std/assert/assert.ts'
 
 import create_mysql from './mysql.ts'
 import make_mysql_helpers_object from './util/mysql_helpers_object.ts'
+import initialize_connection_logging_state from './util/make_mysql_object_log_queries.ts'
 import api from './api.ts'
 import type { Context } from './api.ts'
 
+const make_mysql_object_log_queries = initialize_connection_logging_state()
+
+console.log('Connecting to mysql...')
 const mysql_pool = await create_mysql()
+console.log('Connected, starting server')
 
 type ParamValidator<T> = (query_params: { [key: string]: string | string[] }) => T
 type PvContents<T> = T extends ParamValidator<infer U> ? U : T
@@ -52,9 +57,14 @@ Deno.serve({
 
 		let mysql_connection = null
 		try {
-			mysql_connection = await mysql_pool.getConnection()
+			mysql_connection = make_mysql_object_log_queries(await mysql_pool.getConnection())
 			const mysql = make_mysql_helpers_object(mysql_connection)
 			const response_body = await api_function({ mysql, request }, body)
+
+			if (response_body instanceof Response) {
+				return response_body
+			}
+
 			return new Response(JSON.stringify(response_body), {
 				headers: {
 					'content-type': 'application/json',
@@ -64,7 +74,7 @@ Deno.serve({
 			console.error('error thrown by', pathname)
 			console.error(err)
 			return new Response(err.message, {
-				status: 500,
+				status: err.status_code || 500,
 			})
 		} finally {
 			if (mysql_connection) {

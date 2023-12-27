@@ -1,37 +1,69 @@
 <script lang=ts>
-	import {create_new_line_item, type LineItem} from './line_item_types'
+	import type { LineItem } from './line_item_types'
 	import LineItemComponent from './LineItem.svelte'
-	import { querystring_to_object } from './query_serialization'
+	import { querystring_to_object, serialize_to_url } from './query_serialization'
 	import pv from './param_validator';
 	import assert from './assert'
 
-	import {get_line_item_ids,get_line_item, set_line_item} from './local_storage'
+	import read_querystring from './read_querystring';
+   import api from './api_request';
 
-	const validate_line_item_param = pv({
-		line_item_number: pv.optional(pv.integer)
+   let line_items: null | LineItem[] = null
+
+	let line_item_index: null | number = null
+	let line_item: null | LineItem
+
+	$: line_item = Number.isSafeInteger(line_item_index) ? line_items[line_item_index] : null
+
+	const validate_params = pv({
+		invoice_anonymous_uuid: pv.optional(pv.string),
+		line_item_index: pv.optional(pv.integer),
 	})
 
-	const line_item_ids = get_line_item_ids()
+	const querystring_params = read_querystring(validate_params)
 
-	console.log('line_item_ids:', line_item_ids)
+	type ExpectedParams = typeof querystring_params
 
-	if (line_item_ids.length === 0) {
-		const new_line_item = create_new_line_item()
-		line_item_ids.push(new_line_item.id)
-		set_line_item(new_line_item)
+	const init = async (params: ExpectedParams) => {
+		let invoice_anonymous_uuid = params.invoice_anonymous_uuid
+		if (!invoice_anonymous_uuid) {
+			const { uuid } = await api.invoice_anonymous.create()
+			invoice_anonymous_uuid = uuid
+			serialize_to_url({
+				invoice_anonymous_uuid
+			})
+		}
+
+		line_items = await api.invoice_anonymous.get_line_items({invoice_anonymous_uuid})
+
+		if (line_items.length === 0) {
+			const line_item = await api.invoice_line_item_anonymous.create({ invoice_anonymous_uuid, description: '' })
+			line_items.push(line_item)
+			line_item_index = 0
+		} else if (Number.isSafeInteger(params.line_item_index) && params.line_item_index >= 0 && params.line_item_index < line_items.length - 0) {
+			line_item_index = params.line_item_index
+		} else {
+			line_item_index = 0
+		}
+
+		const line_item = line_items[line_item_index]
+
+		serialize_to_url({
+			line_item_index
+		})
+
+		let line_item_images = await api.invoice_line_item_anonymous.get_with_images({
+			invoice_anonymous_uuid,
+			invoice_line_item_anonymous_id: line_item.invoice_line_item_anonymous_id
+		})
+
+		console.log(line_item_images)
 	}
 
-	const params = validate_line_item_param(querystring_to_object(location.search))
+	init(querystring_params)
 
-	const current_line_item_index = params.line_item_number || 0
-
-	assert(current_line_item_index < line_item_ids.length)
-
-	const line_item_id = line_item_ids[current_line_item_index]
-
-	let line_item = get_line_item(line_item_id)
-
-	$: set_line_item(line_item)
 </script>
 
-<LineItemComponent bind:line_item />
+{#if line_item}
+	<LineItemComponent bind:line_item />
+{/if}
