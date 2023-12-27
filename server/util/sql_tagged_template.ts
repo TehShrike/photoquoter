@@ -20,11 +20,13 @@ const smarter_escape = (value: unknown, add_parens_to_arrays = false): string =>
 		return `'${utc_to_iso_datetime(value)}'`
 	} else if (is_object(value)) {
 		return escape(JSON.stringify(value))
-	} else if (typeof value !== 'number' || typeof value !== 'string') {
-		throw new Error(`Can't escape this value: "${value}"`)
+	} else if (typeof value === 'number') {
+		return value.toString()
+	} else if (typeof value === 'string') {
+		return escape_string(value)
 	}
 
-	return escape_string(value)
+	throw new Error(`Can't escape this value: "${value}"`)
 }
 
 const is_object = (str: unknown): str is object => !!str && typeof str === `object`
