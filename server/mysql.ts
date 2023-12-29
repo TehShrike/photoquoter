@@ -21,6 +21,15 @@ type Field = {
 const time_types = new Set([`TIMESTAMP`, `DATETIME`])
 const database_utc_offset = `Z`
 
+const buffer_types = new Set([
+	'TINYBLOB',
+	'MEDIUMBLOB',
+	'LONGBLOB',
+	'BLOB',
+	'BINARY',
+	'VARBINARY',
+])
+
 const static_connection_options: ConnectionOptions = {
 	multipleStatements: true,
 	supportBigNumbers: true,
@@ -45,6 +54,9 @@ const static_connection_options: ConnectionOptions = {
 				return null
 			}
 			return datetime_string.replace(` `, `T`) + database_utc_offset
+		} else if (buffer_types.has(field.type)) {
+			const buffer = field.buffer()
+			return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
 		}
 
 		return next()

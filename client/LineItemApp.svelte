@@ -1,6 +1,6 @@
 <script lang=ts>
-	import type { LineItem } from './line_item_types'
-	import LineItemComponent from './LineItem.svelte'
+	import type { Image, LineItem } from './line_item_types'
+	import LineItemImage from './LineItemImage.svelte'
 	import { querystring_to_object, serialize_to_url } from './query_serialization'
 	import pv from './param_validator';
 	import assert from './assert'
@@ -49,6 +49,7 @@
 		const line_item = line_items[line_item_index]
 
 		serialize_to_url({
+			invoice_anonymous_uuid,
 			line_item_index
 		})
 
@@ -57,13 +58,27 @@
 			invoice_line_item_anonymous_id: line_item.invoice_line_item_anonymous_id
 		})
 
+		// TODO: Keep this array in local state
 		console.log(line_item_images)
 	}
 
 	init(querystring_params)
 
+	const on_new_image = async (image: Image) => {
+		assert(querystring_params.invoice_anonymous_uuid)
+
+		await api.invoice_line_item_anonymous_image.create({
+			invoice_anonymous_uuid: querystring_params.invoice_anonymous_uuid,
+			invoice_line_item_anonymous_id: line_item.invoice_line_item_anonymous_id,
+			image: image.image,
+			mime_type: image.mime_type
+		})
+	}
+
 </script>
 
 {#if line_item}
-	<LineItemComponent bind:line_item />
+	<LineItemImage
+		on:new_image={({detail: image }) => on_new_image(image)}
+	/>
 {/if}

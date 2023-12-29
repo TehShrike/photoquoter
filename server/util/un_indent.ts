@@ -3,7 +3,7 @@ const get_tabs_at_start = (str: string) => {
 	const match = tab_prefix_regex.exec(str)
 
 	if (match) {
-		const [ tabs ] = match
+		const [tabs] = match
 
 		return tabs.length
 	}
@@ -17,8 +17,8 @@ export default (str: string): string => {
 	const lines = str.split(`\n`)
 
 	const least_number_of_leading_tabs = Math.min(
-		...lines.filter(line => line.length > 0).map(get_tabs_at_start)
+		...lines.filter((line) => line.length > 0).map(get_tabs_at_start),
 	)
 
-	return lines.map(line => line.slice(least_number_of_leading_tabs)).join(`\n`)
+	return lines.map((line) => line.slice(least_number_of_leading_tabs)).join(`\n`)
 }

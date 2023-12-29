@@ -15,7 +15,8 @@ create table invoice_line_item_anonymous (
 
 create table invoice_line_item_anonymous_image (
 	invoice_line_item_anonymous_image_id int unsigned auto_increment not null,
-	image blob not null,
+	image mediumblob not null,
+	mime_type varchar(255) not null,
 	invoice_line_item_anonymous_id INT UNSIGNED NOT NULL,
 	KEY (invoice_line_item_anonymous_id),
 	primary key (invoice_line_item_anonymous_image_id)

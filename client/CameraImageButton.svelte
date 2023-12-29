@@ -1,7 +1,9 @@
 <script lang=ts>
-    import assert from "./assert";
+	import { createEventDispatcher } from 'svelte'
+	import assert from "./assert"
+	import type { Image } from './line_item_types'
 
-	export let data_url: string | null = null
+	const dispatch = createEventDispatcher()
 
 	let image_input: HTMLInputElement
 
@@ -9,12 +11,21 @@
 		const file = image_input.files[0]
 		const reader = new FileReader()
 
+		const mime_type = file.type
+
 		reader.onload = async (e) => {
-			assert(typeof e.target.result === 'string')
-			data_url = e.target.result
+			const array_buffer = e.target.result
+			assert(array_buffer instanceof ArrayBuffer)
+
+			const image: Image = {
+				image: array_buffer,
+				mime_type
+			}
+
+			dispatch('new_image', image)
 		}
 
-		reader.readAsDataURL(file)
+		reader.readAsArrayBuffer(file)
 	}
 </script>
 

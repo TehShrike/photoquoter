@@ -1,14 +1,20 @@
 <script lang=ts>
-	export let image: HTMLImageElement | null
+	import array_buffer_to_img from "./array_buffer_to_img"
+	import type { Image } from "./line_item_types"
+
+	export let image: Image | null = null
 
 	let canvas: HTMLCanvasElement
 
 	$: context = canvas && canvas.getContext('2d')
 
-	const update_image = (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, image: HTMLImageElement) => {
-		canvas.width = image.width;
-		canvas.height = image.height;
-		context.drawImage(image, 0, 0)
+	const update_image = (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, image: Image) => {
+		const img = array_buffer_to_img(image.image, image.mime_type)
+
+		canvas.width = img.width;
+		canvas.height = img.height;
+
+		context.drawImage(img, 0, 0)
 	}
 
 	$: context && image && update_image(canvas, context, image)

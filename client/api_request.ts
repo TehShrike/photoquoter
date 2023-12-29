@@ -1,14 +1,15 @@
 import type { ConsumableApi } from '../server/api'
 import api_shape from './api_shape.ts'
+import fancy_serializer from '../shared/fancy_serializer.ts'
 
-const json_content_type = 'application/json'
+const fancy_json_content_type = 'application/fancy_json'
 
 const futch = async (url, options: { body: any; headers?: { [prop: string]: string } }) => {
 	const response = await fetch(url, {
 		method: 'POST',
-		body: JSON.stringify(options.body),
+		body: fancy_serializer.serialize(options.body),
 		headers: {
-			'content-type': json_content_type,
+			'content-type': fancy_json_content_type,
 			...options.headers,
 		},
 	})
@@ -19,9 +20,9 @@ const futch = async (url, options: { body: any; headers?: { [prop: string]: stri
 
 	if (
 		response.headers.has('content-type') &&
-		response.headers.get('content-type') === json_content_type
+		response.headers.get('content-type') === fancy_json_content_type
 	) {
-		return response.json()
+		return fancy_serializer.deserialize(await response.text())
 	}
 }
 

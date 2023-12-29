@@ -12,5 +12,6 @@ export type InvoiceLineItemAnonymous = {
 export type InvoiceLineItemAnonymousImage = {
 	invoice_line_item_anonymous_image_id: number
 	image: Blob
+	mime_type: string
 	invoice_line_item_anonymous_id: number
 }

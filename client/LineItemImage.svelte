@@ -3,25 +3,20 @@
 	import DrawableImage from "./DrawableImage.svelte"
 	import image_url_to_image from "./image_url_to_image";
 
+	import { createEventDispatcher } from 'svelte'
+
+	const dispatch = createEventDispatcher()
+
 	import api from './api_request'
 
-	import type { LineItem } from "./line_item_types"
+	import type { LineItemImage, Image } from "./line_item_types"
 
-	export let line_item: LineItem
+	let image: Image | null = null
 
-	let data_url: string
-
-	$: if(line_item) line_item.picture_data_url = data_url
-
-	$: console.log('line_item changed to', line_item)
-
-	$: image_promise = data_url && image_url_to_image(data_url)
-
-	$: image_promise && image_promise.catch(error => {
-		console.log('errororororor', error)
-	})
-
-	api.what_day_is_it()
+	const on_new_image = (new_image: Image) => {
+		image = new_image
+		dispatch('new_image', new_image)
+	}
 </script>
 
 <div class=container style="font-weight: bold">
@@ -31,7 +26,7 @@
 	<div class=row>
 		<button>Prev</button>
 
-		<CameraImageButton bind:data_url>
+		<CameraImageButton on:new_image={({ detail: image }) => on_new_image(image)}>
 			Take picture
 		</CameraImageButton>
 
@@ -40,13 +35,9 @@
 		<button>Next</button>
 	</div>
 	<div class="row">
-		{#await image_promise then image}
+		{#if image}
 			<DrawableImage {image} />
-		{:catch error}
-			<p>{JSON.stringify(error)}</p>
-			<p>{error.message}</p>
-			<pre>{error.stack}</pre>
-		{/await}
+		{/if}
 	</div>
 </div>
 

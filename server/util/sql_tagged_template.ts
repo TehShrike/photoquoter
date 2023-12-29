@@ -1,4 +1,5 @@
 import { utc_to_iso_datetime } from './date.ts'
+import array_buffer_to_mysql_hex from './array_buffer_to_mysql_hex.ts'
 
 export default (queryParts: TemplateStringsArray, ...values: unknown[]) => {
 	return queryParts.reduce((query, queryPart, i) => {
@@ -18,6 +19,8 @@ const smarter_escape = (value: unknown, add_parens_to_arrays = false): string =>
 		return result
 	} else if (value instanceof Date) {
 		return `'${utc_to_iso_datetime(value)}'`
+	} else if (value instanceof ArrayBuffer) {
+		return array_buffer_to_mysql_hex(value)
 	} else if (is_object(value)) {
 		return escape(JSON.stringify(value))
 	} else if (typeof value === 'number') {
