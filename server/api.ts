@@ -94,9 +94,6 @@ const api = {
 				invoice_line_item_anonymous_id: number
 			}[]
 
-			// TODO: make sure that the image is actually an ArrayBuffer and not a Blob or Buffer
-			console.log('Images from mysql2:', invoice_line_item_anonymous_images)
-
 			return {
 				...invoice_line_item_anonymous,
 				invoice_line_item_anonymous_images,
@@ -113,8 +110,6 @@ const api = {
 				mime_type: string
 			},
 		) {
-			console.log('Is image ArrayBuffer?', image instanceof ArrayBuffer)
-			console.log('Heres the image I got', image)
 			const invoice_line_item_anonymous_image_id = await mysql.query(sql`
 				INSERT INTO invoice_line_item_anonymous_image
 				SET
